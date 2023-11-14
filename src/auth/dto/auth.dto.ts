@@ -16,6 +16,9 @@ export class AuthDto {
 	@IsString()
 	@IsOptional()
 	hashedPassword: string
+	@IsString()
+	@IsOptional()
+	accessToken: string
 }
 
 export class LoginDto {

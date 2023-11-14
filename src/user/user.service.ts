@@ -11,18 +11,7 @@ import { User } from '@prisma/client'
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService) {}
-	async validateUser(email: string): Promise<User> {
-		const user = await this.prisma.user.findUnique({
-			where: { email }
-		})
-		if (!user) throw new NotFoundException('User not found')
-		return user
-	}
-	async isUserByEmail(email: string): Promise<null | BadRequestException> {
-		const oldUser = await this.prisma.user.findUnique({ where: { email } })
-		if (oldUser) throw new BadRequestException('User already exist')
-		return null
-	}
+
 	async userById(id: string): Promise<User> {
 		const user = await this.prisma.user.findUnique({
 			where: { id }
@@ -30,18 +19,44 @@ export class UserService {
 		if (!user) throw new NotFoundException('User not found')
 		return user
 	}
-	async create(dto: UserDto) {
-		const hashedPassword = await bcrypt.hash(dto.hashedPassword, 7)
+	async createNewUser(dto: UserDto) {
+		const hashedPassword = dto.hashedPassword
+			? await bcrypt.hash(dto.hashedPassword, 7)
+			: null
+		const emailVerify = dto.emailVerified ? dto.emailVerified : false
 		const data = {
-			firstName: dto.firstName,
-			lastName: dto.lastName,
-			email: dto.email,
-			emailVerified: false,
-			picture: dto.picture,
+			...dto,
+			accessToken: null,
+			emailVerified: emailVerify,
 			hashedPassword
 		}
 		return this.prisma.user.create({
 			data
+		})
+	}
+	async validateUser(email: string): Promise<User> {
+		const user = await this.prisma.user.findUnique({
+			where: { email }
+		})
+		if (!user) throw new NotFoundException('User not found')
+		return user
+	}
+	async findUserEmail(email: string): Promise<User> {
+		return this.prisma.user.findUnique({
+			where: { email }
+		})
+	}
+	async isUserEmail(email: string): Promise<null | BadRequestException> {
+		const oldUser = await this.prisma.user.findUnique({ where: { email } })
+		if (oldUser) throw new BadRequestException('User already exist')
+		return null
+	}
+	async emailVerified(email: string): Promise<User> {
+		return this.prisma.user.update({
+			where: { email: email },
+			data: {
+				emailVerified: true
+			}
 		})
 	}
 }
