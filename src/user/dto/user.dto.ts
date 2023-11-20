@@ -1,8 +1,9 @@
 import { Prisma } from '@prisma/client'
-import { IsEmail, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator'
 
 export class UserDto implements Prisma.UserUpdateInput {
 	@IsEmail()
+	@IsOptional()
 	email: string
 	@IsString()
 	@IsOptional()
@@ -10,7 +11,7 @@ export class UserDto implements Prisma.UserUpdateInput {
 	@IsString()
 	@IsOptional()
 	hashedPassword: string
-	@IsString()
+	@IsBoolean()
 	@IsOptional()
 	emailVerified: boolean
 	@IsString()
@@ -22,4 +23,28 @@ export class UserDto implements Prisma.UserUpdateInput {
 	@IsString()
 	@IsOptional()
 	accessToken: string
+}
+export class UserDtoUpdate implements Prisma.UserUpdateInput {
+	@IsEmail()
+	@IsOptional()
+	email: string
+	@IsString()
+	@IsOptional()
+	picture: string
+	@IsString()
+	@IsOptional()
+	previousPassword: string
+	@IsString()
+	@IsOptional()
+	newPassword: string
+	@IsString()
+	@IsOptional()
+	accessToken: string
+	@IsBoolean()
+	@IsOptional()
+	emailVerified: boolean
+	firstName: string
+	@IsString()
+	@IsOptional()
+	lastName: string
 }

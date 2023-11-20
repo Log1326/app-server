@@ -21,12 +21,11 @@ import { ResultFn, TokensType } from './dto/types'
 
 import { CurrentUser } from './decorators/user.decorator'
 import { Cookies } from './decorators/cookie.decorator'
-
-import { AuthGuard } from './guard/auth.guard'
 import { GoogleOAuthGuard } from './guard/google-oauth.guard'
 
 import { AuthService } from './auth.service'
 import { Auth } from './decorators/auth.decorator'
+import { AuthGuardCookie } from './guard/auth.guard'
 
 @Controller('auth')
 export class AuthController {
@@ -74,7 +73,7 @@ export class AuthController {
 	@UsePipes(new ValidationPipe())
 	@HttpCode(HttpStatus.OK)
 	@Get('access-token')
-	@UseGuards(AuthGuard)
+	@UseGuards(AuthGuardCookie)
 	async updateTokens(
 		@Cookies('refresh_token') refresh_token: string,
 		@Res({ passthrough: true }) res: Response
@@ -97,7 +96,7 @@ export class AuthController {
 
 	@HttpCode(200)
 	@Get('verify/:link')
-	@Redirect('https://docs.nestjs.com', 302)
+	@Redirect('http://localhost:3000/', 302)
 	async activate(@Param('link') link: string) {
 		await this.auth.activateLink(link)
 		return { message: 'success' }
