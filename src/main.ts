@@ -10,9 +10,8 @@ async function bootstrap() {
 	app.use(cookieParser())
 	app.setGlobalPrefix('api')
 	app.enableCors({
-		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
 		credentials: true,
-		origin: '*'
+		origin: process.env.FRONT_API
 	})
 	await app.listen(process.env.PORT || 4200)
 }

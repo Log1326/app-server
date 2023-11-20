@@ -3,8 +3,6 @@ import { User } from '@prisma/client'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 
 import { JwtService } from '@nestjs/jwt'
-
-import * as bcrypt from 'bcrypt'
 import { Request, Response } from 'express'
 
 import { AuthDto } from './dto/auth.dto'
@@ -35,20 +33,21 @@ export class AuthService {
 				user: this.returnUserFields(userExist),
 				...tokens
 			}
-		}
-		const user = await this.user.createNewUser(userGoogle)
-		const tokens = await this.issueTokens(user.id, user.email, {
-			access: '1d',
-			refresh: '2d'
-		})
-		return {
-			exist: false,
-			user: this.returnUserFields(user),
-			...tokens
+		} else {
+			const user = await this.user.createNewUser(userGoogle)
+			const tokens = await this.issueTokens(user.id, user.email, {
+				access: '1d',
+				refresh: '2d'
+			})
+			return {
+				exist: false,
+				user: this.returnUserFields(user),
+				...tokens
+			}
 		}
 	}
 	async register(dto: AuthDto): Promise<ResultFn> {
-		await this.user.isUserEmail(dto.email)
+		await this.user.isOldUserEmail(dto.email)
 		await this.mail.sendUserConfirmation(
 			dto.email,
 			`${process.env.API_URL}/auth/verify/${dto.email}`
@@ -75,7 +74,7 @@ export class AuthService {
 		}
 	}
 	async activateLink(link: string): Promise<User> {
-		await this.user.validateUser(link)
+		await this.user.userByEmail(link)
 		return this.user.emailVerified(link)
 	}
 	async updateTokens(refreshToken: string): Promise<TokensType> {
@@ -92,22 +91,21 @@ export class AuthService {
 	}
 	async sendCookie(res: Response, token: string): Promise<Response> {
 		return res.cookie('refresh_token', token, {
-			httpOnly: true,
-			secure: false,
+			httpOnly: true, //if true you cannot use cookie in front
+			secure: false, // only http
 			expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
 		})
 	}
 	async validateAuth(dto: ILogin): Promise<User> {
-		const user = await this.user.validateUser(dto.email)
-		const isValidPassword = await bcrypt.compare(
+		const user = await this.user.userByEmail(dto.email)
+		const isValidPassword = await this.user.validatePassword(
 			dto.hashedPassword,
 			user.hashedPassword
 		)
-		if (!isValidPassword) throw new UnauthorizedException('Invalid credentials')
 		if (user && isValidPassword) return user
-		return null
+		else return null
 	}
-	async logout(id: string, email: string) {
+	async logout(id: string, email: string): Promise<void> {
 		await this.issueTokens(id, email, {
 			access: '1s',
 			refresh: '1s'
