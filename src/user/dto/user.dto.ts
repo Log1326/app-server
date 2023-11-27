@@ -20,9 +20,6 @@ export class UserDto implements Prisma.UserUpdateInput {
 	@IsString()
 	@IsOptional()
 	lastName: string
-	@IsString()
-	@IsOptional()
-	accessToken: string
 }
 export class UserDtoUpdate implements Prisma.UserUpdateInput {
 	@IsEmail()

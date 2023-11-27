@@ -106,6 +106,7 @@ export class AuthService {
 		else return null
 	}
 	async logout(id: string, email: string): Promise<void> {
+		await this.user.clearCache()
 		await this.issueTokens(id, email, {
 			access: '1s',
 			refresh: '1s'

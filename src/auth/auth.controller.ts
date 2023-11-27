@@ -66,6 +66,7 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 		@Body() dto: LoginDto
 	): Promise<ResultFn> {
+		console.log(dto)
 		const user = await this.auth.login(dto)
 		await this.auth.sendCookie(res, user.refreshToken)
 		return this.auth.fieldsUserIdToken(user)
